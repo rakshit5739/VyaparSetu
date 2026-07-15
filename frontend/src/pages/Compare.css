@@ -1,0 +1,180 @@
+.compare-page {
+  padding: 5rem 0;
+  min-height: calc(100vh - 120px);
+}
+
+.compare-search-section {
+  max-width: 700px;
+  margin: 0 auto 4rem;
+  text-align: center;
+}
+
+.compare-search-section h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.compare-search-section p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+/* Compare Results Table & Layout */
+.compare-results {
+  max-width: 900px;
+  margin: 0 auto;
+  animation: slideUp 0.5s ease-out;
+}
+
+.compare-results-header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.compare-results-header h3 {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.compare-results-header h3 span {
+  color: var(--accent-cyan);
+}
+
+.compare-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.compare-item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.8rem 2.2rem;
+  position: relative;
+  transition: var(--transition);
+}
+
+.compare-item-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.compare-shop-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 60%;
+}
+
+.compare-shop-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.compare-shop-address {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.compare-shop-address svg {
+  color: var(--text-muted);
+}
+
+.compare-price-visit {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.compare-price {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: right;
+  min-width: 100px;
+}
+
+.compare-visit-btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+}
+
+/* Cheapest Highlight styles */
+.compare-item-card.cheapest {
+  border-color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.04);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.15);
+}
+
+.compare-item-card.cheapest::before {
+  content: 'CHEAPEST';
+  position: absolute;
+  top: -10px;
+  left: 30px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  background: var(--accent-emerald);
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 10px var(--accent-emerald);
+}
+
+.compare-item-card.cheapest .compare-shop-name {
+  color: var(--accent-emerald);
+}
+
+.compare-item-card.cheapest .compare-price {
+  color: var(--accent-emerald);
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.compare-item-card.cheapest .compare-visit-btn {
+  background: linear-gradient(135deg, var(--accent-emerald), #059669);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.compare-item-card.cheapest .compare-visit-btn:hover {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .compare-item-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 1.5rem;
+  }
+  
+  .compare-shop-info {
+    max-width: 100%;
+  }
+  
+  .compare-price-visit {
+    width: 100%;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .compare-price {
+    text-align: left;
+    min-width: auto;
+  }
+  
+  .compare-item-card.cheapest::before {
+    left: 20px;
+  }
+}
