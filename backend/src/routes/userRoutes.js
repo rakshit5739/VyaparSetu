@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, loginUser } = require("../controllers/userController");
+const { registerUser, loginUser ,getProfile } = require("../controllers/userController");
 const { protect } = require("../middleware/authMiddleware");
 
 console.log("registerUser:", typeof registerUser);
@@ -16,4 +16,5 @@ router.get("/test", protect, (req, res) => {
         message: "Protected Route Accessed Successfully",
     });
 });
+router.get("/profile", protect, getProfile);
 module.exports = router;

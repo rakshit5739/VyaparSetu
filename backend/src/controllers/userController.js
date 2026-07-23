@@ -91,8 +91,19 @@ const loginUser = async (req, res) => { // controller function for login
     token,
     });
 };
+const getProfile = async (req, res) => {
+    res.status(200).json({
+        success: true,
+        user: {
+            id: req.user._id,
+            name: req.user.name,
+            email: req.user.email,
+        },
+    });
+};
 
 module.exports = {
     registerUser,
     loginUser,
+    getProfile,
 };
