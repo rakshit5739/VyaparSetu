@@ -1,6 +1,6 @@
 const express = require("express");
 const { registerUser, loginUser ,getProfile } = require("../controllers/userController");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 
 console.log("registerUser:", typeof registerUser);
 console.log("loginUser:", typeof loginUser);
@@ -17,4 +17,27 @@ router.get("/test", protect, (req, res) => {
     });
 });
 router.get("/profile", protect, getProfile);
+router.get(
+    "/customer-test",
+    protect,
+    authorize("customer"),
+    (req, res) => {
+        res.json({
+            success: true,
+            message: "Customer Route Accessed",
+        });
+    }
+);
+
+router.get(
+    "/shopkeeper-test",
+    protect,
+    authorize("shopkeeper"),
+    (req, res) => {
+        res.json({
+            success: true,
+            message: "Shopkeeper Route Accessed",
+        });
+    }
+);
 module.exports = router;

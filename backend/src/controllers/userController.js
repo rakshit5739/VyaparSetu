@@ -4,7 +4,7 @@ const User = require("../models/User");
 
 const registerUser = async(req, res) => {
 
-    const { name, email, password } = req.body;
+    const { name, email, password, roles } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -12,6 +12,19 @@ const registerUser = async(req, res) => {
             success: false,
             message: "Please provide all required fields",
         });
+    }
+
+    if (roles) {
+    const validRoles = ["customer", "shopkeeper"];
+
+    const isValid = roles.every(role => validRoles.includes(role));
+
+    if (!isValid) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid roles",
+        });
+    }
     }
 
     const existingUser = await User.findOne({ email });
@@ -29,9 +42,10 @@ const registerUser = async(req, res) => {
     name,
     email,
     password: hashedPassword,
+    roles,
    });
 
-   console.log(user);
+    console.log(user);
 
     console.log("Original Password:", password);
     console.log("Hashed Password:", hashedPassword);
