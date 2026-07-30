@@ -35,6 +35,32 @@ const createPurchaseRequest = async (req, res) => {
     }
 };
 
+const getMatchingRequests = async (req, res) => {
+    try {
+
+        const shopkeeperCategories = req.user.businessCategories;
+
+        const purchaseRequests = await PurchaseRequest.find({
+            categories: {
+                $in: shopkeeperCategories,
+            },
+        }).populate("customer", "name email");
+
+        return res.status(200).json({
+        success: true,
+        count: purchaseRequests.length,
+        purchaseRequests,
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+    }
+};
+
 module.exports = {
     createPurchaseRequest,
+    getMatchingRequests,
 };

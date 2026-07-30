@@ -21,6 +21,21 @@ const userSchema = new mongoose.Schema(
     enum: ["customer", "shopkeeper"],
     default: ["customer"],
     },
+    businessCategories: {
+    type: [{
+        type: String,
+        enum: [
+            "Construction",
+            "Electrical",
+            "Paint",
+            "Plumbing",
+            "Hardware",
+            "Agriculture",
+            "Others"
+        ],
+    }],
+    default: [],
+},
 },
 {
     timestamps: true,

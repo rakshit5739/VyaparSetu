@@ -4,7 +4,7 @@ const User = require("../models/User");
 
 const registerUser = async(req, res) => {
 
-    const { name, email, password, roles } = req.body;
+    const { name, email, password, roles, businessCategories, } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -26,6 +26,12 @@ const registerUser = async(req, res) => {
         });
     }
     }
+    if ( roles && roles.includes("shopkeeper") && (!businessCategories || businessCategories.length === 0)) {
+    return res.status(400).json({
+        success: false,
+        message: "Shopkeeper must select at least one business category",
+    });
+}
 
     const existingUser = await User.findOne({ email });
 
@@ -42,17 +48,9 @@ const registerUser = async(req, res) => {
     name,
     email,
     password: hashedPassword,
-    roles,
+    roles: roles || ["customer"],
+    businessCategories: businessCategories || [],
    });
-
-    console.log(user);
-
-    console.log("Original Password:", password);
-    console.log("Hashed Password:", hashedPassword);
-
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
 
     res.status(201).json({
     success: true,
@@ -61,6 +59,8 @@ const registerUser = async(req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        roles: user.roles,
+        businessCategories: user.businessCategories,
     },
 });
 };
@@ -121,3 +121,12 @@ module.exports = {
     loginUser,
     getProfile,
 };
+
+// console.log(user);
+
+//     console.log("Original Password:", password);
+//     console.log("Hashed Password:", hashedPassword);
+
+//     console.log("Name:", name);
+//     console.log("Email:", email);
+//     console.log("Password:", password);
