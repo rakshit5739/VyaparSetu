@@ -1,77 +1,61 @@
 const Quotation = require("../models/Quotation");
-const Requirement = require("../models/Requirement");
-const Shop = require("../models/Shop");
-const Order = require("../models/Order");
+// const Requirement = require("../models/Requirement");
+// const Shop = require("../models/Shop");
+// const Order = require("../models/Order");
 
-/**
- * @desc    Submit a new quotation (Shopkeeper only)
- * @route   POST /api/quotations
- * @access  Private
- */
+
 const createQuotation = async (req, res) => {
   try {
-    const { requestId, estimatedPrice, remarks, deliveryTime } = req.body;
+    const { purchaseRequest, estimatedPrice, message } = req.body;
 
-    if (!requestId || !estimatedPrice || !deliveryTime) {
+    if (!purchaseRequest || !estimatedPrice || !message) {
       return res.status(400).json({
         success: false,
-        message: "Please fill in all required fields (requestId, estimatedPrice, deliveryTime)",
+        message: "Please fill in all required fields (purchaseRequest, estimatedPrice, message)",
       });
     }
 
     // Verify requirement exists and is active
-    const requirement = await Requirement.findById(requestId);
-    if (!requirement) {
-      return res.status(404).json({
-        success: false,
-        message: "Requirement not found",
-      });
-    }
+    // const requirement = await Requirement.findById(purchaseRequest);
+    // if (!requirement) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "Requirement not found",
+    //   });
+    // }
 
-    if (requirement.status === "Completed" || requirement.status === "Cancelled") {
-      return res.status(400).json({
-        success: false,
-        message: "Cannot quote on a closed or cancelled requirement",
-      });
-    }
+    // if (requirement.status === "Completed" || requirement.status === "Cancelled") {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Cannot quote on a closed or cancelled requirement",
+    //   });
+    // }
 
     // Check if shopkeeper already submitted a quotation
     const existingQuotation = await Quotation.findOne({
-      requestId,
-      shopkeeperId: req.user._id,
+      shopkeeper: req.user._id,
+      purchaseRequest,
     });
 
     if (existingQuotation) {
       return res.status(400).json({
         success: false,
-        message: "You have already submitted a quotation for this requirement",
+        message: "You have already submitted a quotation for this request",
       });
     }
 
-    // Find shopkeeper's shop name
-    const shop = await Shop.findOne({ userId: req.user._id });
-    const shopName = shop ? shop.shopName : req.user.name;
-
-    let quotationFile = "";
-    if (req.file) {
-      quotationFile = `/uploads/${req.file.filename}`;
-    }
-
     const quotation = await Quotation.create({
-      requestId,
-      shopkeeperId: req.user._id,
-      shopName,
-      estimatedPrice: Number(estimatedPrice),
-      remarks,
-      quotationFile,
-      deliveryTime: Number(deliveryTime),
+      shopkeeper: req.user._id,
+      purchaseRequest,
+      estimatedPrice,
+      message,
     });
 
     // Update requirement status to "Quoted" if it was "Pending"
-    if (requirement.status === "Pending") {
-      requirement.status = "Quoted";
-      await requirement.save();
-    }
+    // if (requirement.status === "Pending") {
+    //   requirement.status = "Quoted";
+    //   await requirement.save();
+    // }
 
     res.status(201).json({
       success: true,
@@ -81,7 +65,7 @@ const createQuotation = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server Error: " + error.message,
     });
   }
 };
@@ -111,7 +95,7 @@ const getQuotationsForRequirement = async (req, res) => {
       });
     }
 
-    const quotations = await Quotation.find({ requestId })
+    const quotations = await Quotation.find({ purchaseRequest: requestId })
       .populate("shopkeeperId", "name email phone city address")
       .sort({ estimatedPrice: 1 }); // Highlight lowest price first by sorting asc
 
