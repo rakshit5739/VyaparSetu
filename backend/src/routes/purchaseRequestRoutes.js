@@ -4,7 +4,9 @@ const router = express.Router();
 
 const { protect, authorize } = require("../middleware/authMiddleware");
 
-const { createPurchaseRequest, getMatchingRequests} = require("../controllers/purchaseRequestController");
+const { createPurchaseRequest,
+        getMatchingRequests,
+        getMyPurchaseRequests} = require("../controllers/purchaseRequestController");
 
 router.post(
     "/",
@@ -17,6 +19,13 @@ router.get(
     protect,
     authorize("shopkeeper"),
     getMatchingRequests
+);
+
+router.get(
+    "/my",
+    protect,
+    authorize("customer"),
+    getMyPurchaseRequests
 );
 
 module.exports = router;

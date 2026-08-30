@@ -60,7 +60,31 @@ const getMatchingRequests = async (req, res) => {
     }
 };
 
+const getMyPurchaseRequests = async (req, res) => {
+    try {
+
+        const purchaseRequests = await PurchaseRequest.find({
+            customer: req.user._id,
+        });
+
+        return res.status(200).json({
+            success: true,
+            count: purchaseRequests.length,
+            purchaseRequests,
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+
+    }
+};
+
 module.exports = {
     createPurchaseRequest,
     getMatchingRequests,
+    getMyPurchaseRequests,
 };
