@@ -5,6 +5,7 @@ const connectDB = require("./src/config/db");
 const userRoutes = require("./src/routes/userRoutes");
 const purchaseRequestRoutes = require("./src/routes/purchaseRequestRoutes");
 const quotationRoutes = require("./src/routes/quotationRoutes");
+const orderRoutes = require("./src/routes/orderRoutes");
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json()); // This is the middleware that converts json data from 
 app.use("/api/users", userRoutes);
 app.use("/api/purchase-requests", purchaseRequestRoutes);
 app.use("/api/quotations", quotationRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.get("/", (req, res) => {
   res.json({
