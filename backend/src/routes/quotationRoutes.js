@@ -3,7 +3,7 @@ const {
   createQuotation,
   getQuotationsForPurchaseRequest,
   // getMyQuotations,
-  // acceptQuotation,
+  acceptQuotation
 } = require("../controllers/quotationController");
 const {protect, authorize} = require("../middleware/authMiddleware");
 // const upload = require("../utils/fileUpload");
@@ -19,8 +19,12 @@ router.get(
     authorize("customer"),
     getQuotationsForPurchaseRequest
 );
-// router.get("/requirement/:requestId", protect.authorizeRoles("customer", "admin"), getQuotationsForRequirement);
-// router.get("/my", protect.authorizeRoles("shopkeeper"), getMyQuotations);
-// router.put("/:id/accept", protect.authorizeRoles("customer"), acceptQuotation);
+router.put(
+    "/:id/accept",
+    protect,
+    authorize("customer"),
+    acceptQuotation
+);
+
 
 module.exports = router;
