@@ -68,11 +68,14 @@ const getOrderById = async (req, res) => {
             });
         }
 
-        // Only the customer, shopkeeper, or admin can view the order
+        const isCustomer = req.user.roles.includes("customer");
+        const isShopkeeper = req.user.roles.includes("shopkeeper");
+
         if (
-            order.customer._id.toString() !== req.user._id.toString() &&
-            order.shopkeeper._id.toString() !== req.user._id.toString() &&
-            req.user.role !== "admin"
+            (isCustomer &&
+                order.customer._id.toString() !== req.user._id.toString()) ||
+            (isShopkeeper &&
+                order.shopkeeper._id.toString() !== req.user._id.toString())
         ) {
             return res.status(403).json({
                 success: false,
@@ -134,9 +137,12 @@ const updateOrderStatus = async (req, res) => {
             });
         }
 
-        // Customer can cancel only their own order
+        const isCustomer = req.user.roles.includes("customer");
+        const isShopkeeper = req.user.roles.includes("shopkeeper");
+
+        // Customer can update only their own order
         if (
-            req.user.role === "customer" &&
+            isCustomer &&
             order.customer.toString() !== req.user._id.toString()
         ) {
             return res.status(403).json({
@@ -147,7 +153,7 @@ const updateOrderStatus = async (req, res) => {
 
         // Shopkeeper can update only their own order
         if (
-            req.user.role === "shopkeeper" &&
+            isShopkeeper &&
             order.shopkeeper.toString() !== req.user._id.toString()
         ) {
             return res.status(403).json({
@@ -157,10 +163,7 @@ const updateOrderStatus = async (req, res) => {
         }
 
         // Customer can only cancel
-        if (
-            req.user.role === "customer" &&
-            status !== "Cancelled"
-        ) {
+        if (isCustomer && status !== "Cancelled") {
             return res.status(403).json({
                 success: false,
                 message: "Customer can only cancel an order",
@@ -168,10 +171,7 @@ const updateOrderStatus = async (req, res) => {
         }
 
         // Shopkeeper cannot cancel
-        if (
-            req.user.role === "shopkeeper" &&
-            status === "Cancelled"
-        ) {
+        if (isShopkeeper && status === "Cancelled") {
             return res.status(403).json({
                 success: false,
                 message: "Shopkeeper cannot cancel an order",
@@ -180,7 +180,7 @@ const updateOrderStatus = async (req, res) => {
 
         // Shopkeeper can confirm pending orders
         if (
-            req.user.role === "shopkeeper" &&
+            isShopkeeper &&
             status === "Confirmed" &&
             order.status !== "Pending"
         ) {
@@ -192,7 +192,7 @@ const updateOrderStatus = async (req, res) => {
 
         // Shopkeeper can mark confirmed orders as delivered
         if (
-            req.user.role === "shopkeeper" &&
+            isShopkeeper &&
             status === "Delivered" &&
             order.status !== "Confirmed"
         ) {
@@ -202,9 +202,8 @@ const updateOrderStatus = async (req, res) => {
             });
         }
 
-        // Admin can perform any valid status update
-
         order.status = status;
+
         await order.save();
 
         return res.status(200).json({
