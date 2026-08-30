@@ -6,6 +6,7 @@ const userRoutes = require("./src/routes/userRoutes");
 const purchaseRequestRoutes = require("./src/routes/purchaseRequestRoutes");
 const quotationRoutes = require("./src/routes/quotationRoutes");
 const orderRoutes = require("./src/routes/orderRoutes");
+const shopRoutes = require("./src/routes/shopRoutes");
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/purchase-requests", purchaseRequestRoutes);
 app.use("/api/quotations", quotationRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/shops", shopRoutes);
 
 app.get("/", (req, res) => {
   res.json({
