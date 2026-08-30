@@ -1,4 +1,5 @@
 const Quotation = require("../models/Quotation");
+const PurchaseRequest = require("../models/PurchaseRequest");
 // const Requirement = require("../models/Requirement");
 // const Shop = require("../models/Shop");
 // const Order = require("../models/Order");
@@ -70,45 +71,53 @@ const createQuotation = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get quotations for a requirement (Customer only, populates shopkeeper profile)
- * @route   GET /api/quotations/requirement/:requestId
- * @access  Private
- */
-const getQuotationsForRequirement = async (req, res) => {
-  try {
-    const { requestId } = req.params;
 
-    // Verify requirement ownership
-    const requirement = await Requirement.findById(requestId);
-    if (!requirement) {
-      return res.status(404).json({
-        success: false,
-        message: "Requirement not found",
-      });
+const getQuotationsForPurchaseRequest = async (req, res) => {
+    try {
+        const { purchaseRequestId } = req.params;
+
+        const purchaseRequest = await PurchaseRequest.findById(
+            purchaseRequestId
+        );
+
+        if (!purchaseRequest) {
+            return res.status(404).json({
+                success: false,
+                message: "Purchase request not found",
+            });
+        }
+
+        if (
+            purchaseRequest.customer.toString() !==
+            req.user._id.toString()
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not allowed to view these quotations",
+            });
+        }
+
+        const quotations = await Quotation.find({
+            purchaseRequest: purchaseRequestId,
+        }).populate(
+            "shopkeeper",
+            "name email businessCategories"
+        );
+
+        return res.status(200).json({
+            success: true,
+            count: quotations.length,
+            quotations,
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
     }
-
-    if (requirement.customerId.toString() !== req.user._id.toString() && req.user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to view quotations for this requirement",
-      });
-    }
-
-    const quotations = await Quotation.find({ purchaseRequest: requestId })
-      .populate("shopkeeperId", "name email phone city address")
-      .sort({ estimatedPrice: 1 }); // Highlight lowest price first by sorting asc
-
-    res.status(200).json({
-      success: true,
-      quotations,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
 };
 
 /**
@@ -214,7 +223,7 @@ const acceptQuotation = async (req, res) => {
 
 module.exports = {
   createQuotation,
-  getQuotationsForRequirement,
+  getQuotationsForPurchaseRequest,
   getMyQuotations,
   acceptQuotation,
 };

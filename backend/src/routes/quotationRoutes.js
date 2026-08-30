@@ -1,7 +1,7 @@
 const express = require("express");
 const {
   createQuotation,
-  // getQuotationsForRequirement,
+  getQuotationsForPurchaseRequest,
   // getMyQuotations,
   // acceptQuotation,
 } = require("../controllers/quotationController");
@@ -13,6 +13,12 @@ const router = express.Router();
 router.use(protect);
 
 router.post("/", protect, authorize("shopkeeper"), createQuotation);
+router.get(
+    "/:purchaseRequestId",
+    protect,
+    authorize("customer"),
+    getQuotationsForPurchaseRequest
+);
 // router.get("/requirement/:requestId", protect.authorizeRoles("customer", "admin"), getQuotationsForRequirement);
 // router.get("/my", protect.authorizeRoles("shopkeeper"), getMyQuotations);
 // router.put("/:id/accept", protect.authorizeRoles("customer"), acceptQuotation);
