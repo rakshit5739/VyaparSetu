@@ -7,6 +7,8 @@ const purchaseRequestRoutes = require("./src/routes/purchaseRequestRoutes");
 const quotationRoutes = require("./src/routes/quotationRoutes");
 const orderRoutes = require("./src/routes/orderRoutes");
 const shopRoutes = require("./src/routes/shopRoutes");
+const productRoutes = require("./src/routes/productRoutes");
+const compareRoutes = require("./src/routes/compareRoutes");
 
 dotenv.config();
 
@@ -23,6 +25,9 @@ app.use("/api/purchase-requests", purchaseRequestRoutes);
 app.use("/api/quotations", quotationRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/shops", shopRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/compare", compareRoutes);
+app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
   res.json({

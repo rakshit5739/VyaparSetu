@@ -2,15 +2,24 @@ const express = require("express");
 
 const router = express.Router();
 
-const { protect, authorize } = require("../middleware/authMiddleware");
+const {
+    protect,
+    authorize,
+} = require("../middleware/authMiddleware");
 
-const { createPurchaseRequest,
-        getMatchingRequests,
-        getMyPurchaseRequests} = require("../controllers/purchaseRequestController");
+const upload = require("../middleware/uploadMiddleware");
+
+const {
+    createPurchaseRequest,
+    getMatchingRequests,
+    getMyPurchaseRequests,
+} = require("../controllers/purchaseRequestController");
 
 router.post(
     "/",
     protect,
+    authorize("customer"),
+    upload.single("file"),
     createPurchaseRequest
 );
 
