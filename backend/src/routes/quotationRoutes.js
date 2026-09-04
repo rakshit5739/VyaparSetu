@@ -9,6 +9,9 @@ const {
 
 const {
     createQuotation,
+    getMyQuotations,
+    getQuotationsByRequest,
+    acceptQuotation,
 } = require("../controllers/quotationController");
 
 router.post(
@@ -16,6 +19,27 @@ router.post(
     protect,
     authorize("shopkeeper"),
     createQuotation
+);
+
+router.get(
+    "/my",
+    protect,
+    authorize("customer"),
+    getMyQuotations
+);
+
+router.get(
+    "/request/:purchaseRequestId",
+    protect,
+    authorize("customer"),
+    getQuotationsByRequest
+);
+
+router.put(
+    "/:quotationId/accept",
+    protect,
+    authorize("customer"),
+    acceptQuotation
 );
 
 module.exports = router;

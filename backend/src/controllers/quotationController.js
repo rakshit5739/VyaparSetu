@@ -1,5 +1,6 @@
 const Quotation = require("../models/Quotation");
 const PurchaseRequest = require("../models/PurchaseRequest");
+const Order = require("../models/Order");
 
 const createQuotation = async (req, res) => {
     try {
@@ -117,6 +118,248 @@ const createQuotation = async (req, res) => {
     }
 };
 
+const getMyQuotations = async (req, res) => {
+    try {
+        // Find all purchase requests created by this customer
+        const purchaseRequests =
+            await PurchaseRequest.find({
+                customer: req.user._id,
+            }).select("_id");
+
+        const purchaseRequestIds =
+            purchaseRequests.map(
+                (request) => request._id
+            );
+
+        // Find quotations for those purchase requests
+        const quotations =
+            await Quotation.find({
+                purchaseRequest: {
+                    $in: purchaseRequestIds,
+                },
+            })
+                .populate(
+                    "shopkeeper",
+                    "name email businessCategories"
+                )
+                .populate(
+                    "purchaseRequest",
+                    "title description categories city deadline status"
+                )
+                .sort({
+                    estimatedPrice: 1,
+                });
+
+        return res.status(200).json({
+            success: true,
+            count: quotations.length,
+            quotations,
+        });
+    } catch (error) {
+        console.error(
+            "Get My Quotations Error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+    }
+};
+
+const getQuotationsByRequest = async (req, res) => {
+    try {
+        const { purchaseRequestId } = req.params;
+
+        const purchaseRequest =
+            await PurchaseRequest.findById(purchaseRequestId);
+
+        if (!purchaseRequest) {
+            return res.status(404).json({
+                success: false,
+                message: "Purchase request not found",
+            });
+        }
+
+        // Only the customer who created the request
+        // can view its quotations
+        if (
+            purchaseRequest.customer.toString() !==
+            req.user._id.toString()
+        ) {
+            return res.status(403).json({
+                success: false,
+                message:
+                    "You are not authorized to view quotations for this request",
+            });
+        }
+
+        const quotations =
+            await Quotation.find({
+                purchaseRequest: purchaseRequestId,
+            })
+                .populate(
+                    "shopkeeper",
+                    "name email businessCategories"
+                )
+                .sort({
+                    estimatedPrice: 1,
+                });
+
+        return res.status(200).json({
+            success: true,
+            count: quotations.length,
+            quotations,
+        });
+    } catch (error) {
+        console.error(
+            "Get Quotations By Request Error:",
+            error
+        );
+
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid purchase request ID",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+    }
+};
+
+const acceptQuotation = async (req, res) => {
+    try {
+        const { quotationId } = req.params;
+
+        const quotation = await Quotation.findById(quotationId);
+
+        if (!quotation) {
+            return res.status(404).json({
+                success: false,
+                message: "Quotation not found",
+            });
+        }
+
+        const purchaseRequest =
+            await PurchaseRequest.findById(
+                quotation.purchaseRequest
+            );
+
+        if (!purchaseRequest) {
+            return res.status(404).json({
+                success: false,
+                message: "Purchase request not found",
+            });
+        }
+
+        // Only the customer who created the request
+        // can accept its quotation
+        if (
+            purchaseRequest.customer.toString() !==
+            req.user._id.toString()
+        ) {
+            return res.status(403).json({
+                success: false,
+                message:
+                    "You are not authorized to accept this quotation",
+            });
+        }
+
+        // Cannot accept an already rejected quotation
+        if (quotation.status === "Rejected") {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Cannot accept a rejected quotation",
+            });
+        }
+
+        // Cannot accept another quotation after one
+        // has already been accepted
+        if (purchaseRequest.status === "Accepted") {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "A quotation has already been accepted for this request",
+            });
+        }
+
+        // Request deadline check
+        if (purchaseRequest.deadline <= new Date()) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Cannot accept quotation after request deadline",
+            });
+        }
+
+        // Accept selected quotation
+        quotation.status = "Accepted";
+        await quotation.save();
+
+        // Reject all other quotations for this request
+        await Quotation.updateMany(
+            {
+                purchaseRequest: purchaseRequest._id,
+                _id: {
+                    $ne: quotation._id,
+                },
+                status: "Pending",
+            },
+            {
+                $set: {
+                    status: "Rejected",
+                },
+            }
+        );
+
+        // Update purchase request
+        purchaseRequest.status = "Accepted";
+await purchaseRequest.save();
+
+const order = await Order.create({
+    customer: purchaseRequest.customer,
+    shopkeeper: quotation.shopkeeper,
+    quotation: quotation._id,
+    purchaseRequest: purchaseRequest._id,
+    status: "Pending",
+});
+
+return res.status(200).json({
+    success: true,
+    message: "Quotation accepted and order created successfully",
+    quotation,
+    purchaseRequest,
+    order,
+});
+    } catch (error) {
+        console.error(
+            "Accept Quotation Error:",
+            error
+        );
+
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid quotation ID",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+        });
+    }
+};
+
 module.exports = {
     createQuotation,
+    getMyQuotations,
+    getQuotationsByRequest,
+    acceptQuotation,
 };
